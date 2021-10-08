@@ -17,5 +17,6 @@ public class revListNode {
         SingleListNode reverseList = revSingleListNode.reverseList(singleListNode1);
         System.out.println(reverseList);
 
+
     }
 }
