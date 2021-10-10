@@ -1,4 +1,4 @@
-package dataStructure.QueueStack;
+package dataStructure.queueStack;
 
 // "static void main" must be defined in a public class.
 

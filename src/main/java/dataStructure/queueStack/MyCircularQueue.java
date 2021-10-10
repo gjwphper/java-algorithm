@@ -1,4 +1,4 @@
-package dataStructure.QueueStack;
+package dataStructure.queueStack;
 
 class MyCircularQueue {
 
