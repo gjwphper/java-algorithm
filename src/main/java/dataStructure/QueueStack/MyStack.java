@@ -1,4 +1,4 @@
-package dataStructure.listStack;
+package dataStructure.QueueStack;
 
 import java.util.ArrayList;
 import java.util.List;

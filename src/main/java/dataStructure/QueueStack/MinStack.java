@@ -1,4 +1,4 @@
-package dataStructure.listStack;
+package dataStructure.QueueStack;
 
 import java.util.Deque;
 import java.util.LinkedList;
