@@ -75,6 +75,10 @@ circularQueue.Rear();  // 返回 4
  
 5、ArrayList主要控件开销在于需要在lList列表预留一定空间；而LinkList主要控件开销在于需要存储结点信息以及结点指针信息。
 
+todo 队列和 BFS
+
+
+
 
 
 
