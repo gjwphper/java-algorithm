@@ -1,4 +1,4 @@
-package dataStructure.listNode;
+package dataStructure.linkedNode;
 public class SingleListNode {
     int val;
     SingleListNode next;

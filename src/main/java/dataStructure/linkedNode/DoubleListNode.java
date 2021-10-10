@@ -1,4 +1,4 @@
-package dataStructure.listNode;
+package dataStructure.linkedNode;
 
 public class DoubleListNode {
     int val;
