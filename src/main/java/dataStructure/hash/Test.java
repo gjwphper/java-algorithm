@@ -3,6 +3,7 @@ package dataStructure.hash;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 public class Test {
     public static void main(String[] args) {
@@ -26,5 +27,13 @@ public class Test {
         boolean duplicates = myHashSetApp.findDuplicates(integers);
         System.out.println(duplicates);
 
+
+        TreeSet treeSet = new TreeSet();
+        treeSet.add(2);
+        treeSet.add(3);
+        treeSet.add(1);
+        treeSet.add(5);
+
+        System.out.println(treeSet.toArray());
     }
 }
