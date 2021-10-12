@@ -12,4 +12,18 @@ public class MyStr {
     }
 
 
+    public int quickSlow(int[] s,int a){
+
+        int n = s.length;
+        int slow = 0;
+        for (int f = 0; f < n; f++) {
+            if(s[f] != a){
+                s[slow] = s[f];
+                slow++;
+            }
+        }
+        return slow;
+    }
+
+
 }

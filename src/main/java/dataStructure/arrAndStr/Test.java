@@ -54,6 +54,13 @@ public class Test {
         System.out.println(chars.toString());
 
 
+        int[] w = {3,5,7,9,2,7,1,7};
+        int i = myStr.quickSlow(w, 7);
+        for (int j = 0; j < i; j++) {
+            System.out.println(w[j]);
+        }
+
+
     }
 
 
