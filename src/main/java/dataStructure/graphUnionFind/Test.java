@@ -1,4 +1,4 @@
-package dataStructure.chartUnionFind;
+package dataStructure.graphUnionFind;
 
 public class Test {
     public static void main(String[] args) throws Exception {

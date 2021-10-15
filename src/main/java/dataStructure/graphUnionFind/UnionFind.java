@@ -1,4 +1,4 @@
-package dataStructure.chartUnionFind;
+package dataStructure.graphUnionFind;
 
 public class UnionFind {
     int root[];
