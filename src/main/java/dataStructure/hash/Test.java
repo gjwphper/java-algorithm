@@ -3,6 +3,7 @@ package dataStructure.hash;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class Test {
@@ -35,5 +36,17 @@ public class Test {
         treeSet.add(5);
 
         System.out.println(treeSet.toArray());
+
+        TreeMap<Integer, String> integerStringTreeMap = new TreeMap<>();
+        integerStringTreeMap.put(3,"333");
+        integerStringTreeMap.put(2,"222");
+        integerStringTreeMap.put(1,"111");
+        integerStringTreeMap.put(4,"444");
+        System.out.println(integerStringTreeMap);
+
+
+
+
+
     }
 }
