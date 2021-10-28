@@ -12,6 +12,7 @@ class MyHashSet {
     public MyHashSet() {
         data = new LinkedList[BASE];
         for (int i = 0; i < BASE; ++i) {
+            //链表构成的数组
             data[i] = new LinkedList<Integer>();
         }
     }
