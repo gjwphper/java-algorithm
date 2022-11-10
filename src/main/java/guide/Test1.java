@@ -1,5 +1,8 @@
 package guide;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -7,7 +10,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Test1 {
-    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         List<Integer> list = new ArrayList<>();
         //
         list.add(12);
@@ -43,10 +46,18 @@ public class Test1 {
         System.out.println(s);
 
 
-        Scanner input = new Scanner(System.in);
-        String ww  = input.nextLine();
-        System.out.println(ww);
-        input.close();
+//        Scanner input = new Scanner(System.in);
+//        String ww  = input.nextLine();
+//        System.out.println(ww);
+//        input.close();
+
+
+        BufferedReader input1 = new BufferedReader(new InputStreamReader(System.in));
+        String zz = input1.readLine();
+        System.out.println(zz);
+        input1.close();
+
+
 
 
 
