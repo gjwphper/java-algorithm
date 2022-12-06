@@ -186,3 +186,218 @@ double	Double
 
     
 
+我们知道，Java 中的集合类只能接收对象类型，那么以下代码为什么会不报错呢？
+
+如果一个变量 p 的值是：
+
+-128 至 127 之间的整数 (§3.10.1)
+true 和 false 的布尔值 (§3.10.3)
+\u0000 至 \u007f 之间的字符 (§3.10.4)
+范围内的时，将 p 包装成 a 和 b 两个对象时，可以直接使用 a == b 判断 a 和 b 的值是否相等。
+
+自动拆装箱带来的问题
+当然，自动拆装箱是一个很好的功能，大大节省了开发人员的精力，不再需要关心到底什么时候需要拆装箱。但是，他也会引入一些问题。
+
+包装对象的数值比较，不能简单的使用 ==，虽然 -128 到 127 之间的数字可以，但是这个范围之外还是需要使用 equals 比较。
+
+前面提到，有些场景会进行自动拆装箱，同时也说过，由于自动拆箱，如果包装类对象为 null ，那么自动拆箱时就有可能抛出 NPE。
+
+如果一个 for 循环中有大量拆装箱操作，会浪费很多资源。
+
+
+
+这里建议我们使用包装类型，原因是什么呢？
+
+举一个扣费的例子，我们做一个扣费系统，扣费时需要从外部的定价系统中读取一个费率的值，我们预期该接口的返回值中会包含一个浮点型的费率字段。当我们取到这个值得时候就使用公式：金额*费率=费用 进行计算，计算结果进行划扣。
+
+如果由于计费系统异常，他可能会返回个默认值，如果这个字段是Double类型的话，该默认值为null，如果该字段是double类型的话，该默认值为0.0。
+
+如果扣费系统对于该费率返回值没做特殊处理的话，拿到null值进行计算会直接报错，阻断程序。拿到0.0可能就直接进行计算，得出接口为0后进行扣费了。这种异常情况就无法被感知。
+
+这种使用包装类型定义变量的方式，通过异常来阻断程序，进而可以被识别到这种线上问题。如果使用基本数据类型的话，系统可能不会报错，进而认为无异常。
+
+以上，就是建议在POJO和RPC的返回值中使用包装类型的原因。
+
+但是关于这一点，作者之前也有过不同的看法：对于布尔类型的变量，我认为可以和其他类型区分开来，作者并不认为使用null进而导致NPE是一种最好的实践。因为布尔类型只有true/false两种值，我们完全可以和外部调用方约定好当返回值为false时的明确语义。
+
+后来，作者单独和《阿里巴巴Java开发手册》、《码出高效》的作者——孤尽 单独1V1(qing) Battle(jiao)了一下。最终达成共识，还是尽量使用包装类型。
+
+但是，作者还是想强调一个我的观点，尽量避免在你的代码中出现不确定的null值。
+
+
+
+String在Java中特别常用，而且我们经常要在代码中对字符串进行赋值和改变他的值，但是，为什么我们说字符串是不可变的呢？
+
+首先，我们需要知道什么是不可变对象？
+
+不可变对象是在完全创建后其内部状态保持不变的对象。这意味着，一旦对象被赋值给变量，我们既不能更新引用，也不能通过任何方式改变内部状态。
+
+可是有人会有疑惑，String为什么不可变，我的代码中经常改变String的值啊，如下：
+
+String s = "abcd";
+s = s.concat("ef");
+复制ErrorOK!
+这样，操作，不就将原本的"abcd"的字符串改变成"abcdef"了么？
+
+但是，虽然字符串内容看上去从"abcd"变成了"abcdef"，但是实际上，我们得到的已经是一个新的字符串了。
+
+
+
+replace、replaceAll和replaceFirst是Java中常用的替换字符的方法,它们的方法定义是：
+
+replace(CharSequence target, CharSequence replacement) ，用replacement替换所有的target，两个参数都是字符串。
+
+replaceAll(String regex, String replacement) ，用replacement替换所有的regex匹配项，regex很明显是个正则表达式，replacement是字符串。
+
+replaceFirst(String regex, String replacement) ，基本和replaceAll相同，区别是只替换第一个匹配项。
+
+可以看到，其中replaceAll以及replaceFirst是和正则表达式有关的，而replace和正则表达式无关。
+
+replaceAll和replaceFirst的区别主要是替换的内容不同，replaceAll是替换所有匹配的字符，而replaceFirst()仅替换第一次出现的字符
+
+用法例子
+String string = "abc123adb23456aa";
+System.out.println(string);//abc123adb23456aa
+
+//使用replace将a替换成H
+System.out.println(string.replace("a","H"));//Hbc123Hdb23456HH
+//使用replaceFirst将第一个a替换成H
+System.out.println(string.replaceFirst("a","H"));//Hbc123adb23456aa
+//使用replace将a替换成H
+System.out.println(string.replaceAll("a","H"));//Hbc123Hdb23456HH
+
+//使用replaceFirst将第一个数字替换成H
+System.out.println(string.replaceFirst("\\d","H"));//abcH23adb23456aa
+//使用replaceAll将所有数字替换成H
+
+
+
+还是这样一段代码。我们把他生成的字节码进行反编译，看看结果。
+
+String wechat = "Hollis";
+String introduce = "每日更新Java相关技术文章";
+String hollis = wechat + "," + introduce;
+复制ErrorOK!
+反编译后的内容如下，反编译工具为jad。
+
+String wechat = "Hollis";
+String introduce = "\u6BCF\u65E5\u66F4\u65B0Java\u76F8\u5173\u6280\u672F\u6587\u7AE0";//每日更新Java相关技术文章
+String hollis = (new StringBuilder()).append(wechat).append(",").append(introduce).toString();
+复制ErrorOK!
+通过查看反编译以后的代码，我们可以发现，原来字符串常量在拼接过程中，是将String转成了StringBuilder后，使用其append方法进行处理的。
+
+那么也就是说，Java中的+对字符串的拼接，其实现原理是使用StringBuilder.append。
+
+
+
+本文介绍了什么是字符串拼接，虽然字符串是不可变的，但是还是可以通过新建字符串的方式来进行字符串的拼接。
+
+常用的字符串拼接方式有五种，分别是使用+、使用concat、使用StringBuilder、使用StringBuffer以及使用StringUtils.join。
+
+由于字符串拼接过程中会创建新的对象，所以如果要在一个循环体中进行字符串拼接，就要考虑内存问题和效率问题。
+
+因此，经过对比，我们发现，直接使用StringBuilder的方式是效率最高的。因为StringBuilder天生就是设计来定义可变字符串和字符串的变化操作的。
+
+但是，还要强调的是：
+
+1、如果不是在循环体中进行字符串拼接的话，直接使用+就好了。
+
+2、如果在并发场景中进行字符串拼接的话，要使用StringBuffer来代替StringBuilder。
+
+
+
+总结
+本文介绍了Java 8中提供的可变字符串类——StringJoiner，可以用于字符串拼接。
+
+StringJoiner其实是通过StringBuilder实现的，所以他的性能和StringBuilder差不多，他也是非线程安全的。
+
+如果日常开发中中，需要进行字符串拼接，如何选择？
+
+1、如果只是简单的字符串拼接，考虑直接使用"+"即可。
+
+2、如果是在for循环中进行字符串拼接，考虑使用StringBuilder和StringBuffer。
+
+3、如果是通过一个List进行字符串拼接，则考虑使用StringJoiner。
+
+
+
+
+我们有三种方式将一个int类型的变量变成一个String类型，那么他们有什么区别？
+
+1.int i = 5;
+2.String i1 = "" + i;
+3.String i2 = String.valueOf(i);
+4.String i3 = Integer.toString(i);
+复制ErrorOK!
+第三行和第四行没有任何区别，因为String.valueOf(i)也是调用Integer.toString(i)来实现的。
+
+第二行代码其实是String i1 = (new StringBuilder()).append(i).toString();，首先创建一个StringBuilder对象，然后再调用append方法，再调用toString方法。
+
+
+
+其实switch只支持一种数据类型，那就是整型，其他数据类型都是转换成整型之后再使用switch的。
+
+
+
+字面量
+前面说过，Class常量池中主要保存的是字面量和符号引用，那么到底什么字面量？
+
+在计算机科学中，字面量（literal）是用于表达源代码中一个固定值的表示法（notation）。几乎所有计算机编程语言都具有对基本值的字面量表示，诸如：整数、浮点数以及字符串；而有很多也对布尔类型和字符类型的值也支持字面量表示；还有一些甚至对枚举类型的元素以及像数组、记录和对象等复合类型的值也支持字面量表示法。
+
+以上是关于计算机科学中关于字面量的解释，并不是很容易理解。说简单点，字面量就是指由字母、数字等构成的字符串或者数值。
+
+字面量只可以右值出现，所谓右值是指等号右边的值，如：int a=123这里的a为左值，123为右值。在这个例子中123就是字面量。
+
+int a = 123;
+String s = "hollis";
+复制ErrorOK!
+上面的代码事例中，123和hollis都是字面量。
+
+本文开头的HelloWorld代码中，Hollis就是一个字面量。
+
+符号引用
+常量池中，除了字面量以外，还有符号引用，那么到底什么是符号引用呢。
+
+符号引用是编译原理中的概念，是相对于直接引用来说的。主要包括了以下三类常量： * 类和接口的全限定名 * 字段的名称和描述符 * 方法的名称和描述符
+
+这也就可以印证前面的常量池中还包含一些com/hollis/HelloWorld、main、([Ljava/lang/String;)V等常量的原因了。
+
+
+运行时常量池、Class常量池、字符串常量池的区别与联系
+虚拟机启动过程中，会将各个Class文件中的常量池载入到运行时常量池中。
+
+所以， Class常量池只是一个媒介场所。在JVM真的运行时，需要把常量池中的常量加载到内存中，进入到运行时常量池。
+
+字符串常量池可以理解为运行时常量池分出来的部分。加载时，对于class的静态常量池，如果字符串会被装到字符串常量池中。
+
+ 上一章
+Class常量池
+
+
+
+代码中可以看出，当参数类型为String，并且长度大于等于65535的时候，就会导致编译失败。
+
+运行期限制
+上面提到的这种String长度的限制是编译期的限制，也就是使用String s= “”;这种字面值方式定义的时候才会有的限制。
+
+那么。String在运行期有没有限制呢，答案是有的，就是我们前文提到的那个Integer.MAX_VALUE ，这个值约等于4G，在运行期，如果String的长度超过这个范围，就可能会抛出异常。(在jdk 1.9之前）
+
+
+
+
+
+简单点说，就是被transient修饰的成员变量，在序列化的时候其值会被忽略，在被反序列化后， transient 变量的值被设为初始值， 如 int 型的是 0，对象型的是 null。
+
+instanceof 是 Java 的保留关键字。它的作用是测试它左边的对象是否是它右边的类的实例，返回 boolean 的数据类型。
+
+以下实例创建了 displayObjectClass() 方法来演示 Java instanceof 关键字用法：
+
+public static void displayObjectClass(Object o) {
+  if (o instanceof Vector)
+     System.out.println("对象是 java.util.Vector 类的实例");
+  else if (o instanceof ArrayList)
+     System.out.println("对象是 java.util.ArrayList 类的实例");
+  else
+    System.out.println("对象是 " + o.getClass() + " 类的实例");
+复制ErrorOK!
+}
