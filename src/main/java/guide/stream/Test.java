@@ -2,16 +2,23 @@ package guide.stream;
 
 import java.util.ArrayList;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 public class Test {
 
 
     public static void main(final String... args) {
         ArrayList<Integer> list = new ArrayList<>();
+        ArrayList<String> list1 = new ArrayList<>();
 
         list.add(30);
         list.add(20);
         list.add(10);
+        list1.add("app");
+        list1.add("org");
+
+        String collect = list1.stream().map(x->String.format("'%s'",x)).collect(Collectors.joining(","));
+        System.out.println(collect);
 
 
         // reduce 需要传入一个BinaryOperator接口，继承了BiFunction接口

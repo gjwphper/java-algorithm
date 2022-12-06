@@ -12,5 +12,11 @@ public class Test {
         System.out.println(integers.isEmpty());
         Son son = new Son();
 
+        String a = "good,\n";
+        System.out.println(",\n".length());
+
+
+
+
     }
 }
