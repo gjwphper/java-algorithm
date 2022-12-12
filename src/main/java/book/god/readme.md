@@ -401,3 +401,187 @@ public static void displayObjectClass(Object o) {
     System.out.println("对象是 " + o.getClass() + " 类的实例");
 复制ErrorOK!
 }
+
+
+
+
+Set如何保证元素不重复?
+在Java的Set体系中，根据实现方式不同主要分为两大类。HashSet和TreeSet。
+
+1、TreeSet 是二叉树实现的，TreeSet中的数据是自动排好序的，不允许放入 null值
+2、HashSet 是哈希表实现的，HashSet中的数据是无序的，可以放入 null值，但只能放入一个null，两者中的值都不能重复，就如数据库中的唯一约束
+
+在HashSet中，基本的操作都是由HashMap底层实现的，因为HashSet底层是用HashMap存储数据的。当向HashSet中添加元素的时候，首先计算元素的hashCode值，然后通过扰动计算和按位与的方式计算出这个元素的存储位置，如果这个位置为空，就将元素添加进去；如果不为空，则用equals方法比较元素是否相等，相等就不添加，否则找一个空位添加。
+
+TreeSet的底层是TreeMap的keySet()，而TreeMap是基于红黑树实现的，红黑树是一种平衡二叉查找树，它能保证任何一个节点的左右子树的高度差不会超过较矮的那棵的一倍。
+
+TreeMap是按key排序的，元素在插入TreeSet时compareTo()方法要被调用，所以TreeSet中的元素要实现Comparable接口。TreeSet作为一种Set，它不允许出现重复元素。TreeSet是用compareTo()来判断重复元素的。
+
+ 上一章
+ 
+ 
+ 
+ 
+ HashMap、HashTable、ConcurrentHashMap区别
+ HashMap和HashTable有何不同？
+ 线程安全：
+ 
+ HashTable 中的方法是同步的，而HashMap中的方法在默认情况下是非同步的。在多线程并发的环境下，可以直接使用HashTable，但是要使用HashMap的话就要自己增加同步处理了。
+ 
+ 继承关系： HashTable是基于陈旧的Dictionary类继承来的。 HashMap继承的抽象类AbstractMap实现了Map接口。
+ 
+ 允不允许null值： HashTable中，key和value都不允许出现null值，否则会抛出NullPointerException异常。 HashMap中，null可以作为键，这样的键只有一个；可以有一个或多个键所对应的值为null。
+ 
+ 默认初始容量和扩容机制： HashTable中的hash数组初始大小是11，增加的方式是 old*2+1。HashMap中hash数组的默认大小是16，而且一定是2的指数。原因参考全网把Map中的hash()分析的最透彻的文章，别无二家。-HollisChuang's Blog
+ 
+ 哈希值的使用不同 ： HashTable直接使用对象的hashCode。 HashMap重新计算hash值。
+ 
+ 遍历方式的内部实现上不同 ： Hashtable、HashMap都使用了 Iterator。而由于历史原因，Hashtable还使用了Enumeration的方式 。 HashMap 实现 Iterator，支持fast-fail，Hashtable的 Iterator 遍历支持fast-fail，用 Enumeration 不支持 fast-fail
+ 
+ HashMap 和 ConcurrentHashMap 的区别？
+ ConcurrentHashMap和HashMap的实现方式不一样，虽然都是使用桶数组实现的，但是还是有区别，ConcurrentHashMap对桶数组进行了分段，而HashMap并没有。
+ 
+ ConcurrentHashMap在每一个分段上都用锁进行了保护。HashMap没有锁机制。所以，前者线程安全的，后者不是线程安全的。
+ 
+ 
+ 
+ HashMap中size表示当前共有多少个KV对，capacity表示当前HashMap的容量是多少，默认值是16，每次扩容都是成倍的。loadFactor是装载因子，当Map中元素个数超过loadFactor* capacity的值时，会触发扩容。loadFactor* capacity可以用threshold表示。
+ 
+ 
+ HashMap 的数据结构
+ 在Java中，保存数据有两种比较简单的数据结构：数组和链表。数组的特点是：寻址容易，插入和删除困难；而链表的特点是：寻址困难，插入和删除容易。上面我们提到过，常用的哈希函数的冲突解决办法中有一种方法叫做链地址法，其实就是将数组和链表组合在一起，发挥了两者的优势，我们可以将其理解为链表的数组。
+ 
+ 
+ 
+ 因为位运算直接对内存数据进行操作，不需要转成十进制，所以位运算要比取模运算的效率更高，所以HashMap在计算元素要存放在数组中的index的时候，使用位运算代替了取模运算。之所以可以做等价代替，前提是要求HashMap的容量一定要是2^n 。
+ 
+ 
+ 
+ 总结
+ HashMap是一种K-V结构，为了提升其查询及插入的速度，底层采用了链表的数组这种数据结构实现的。
+ 
+ 但是因为在计算元素所在的位置的时候，需要使用hash算法，而HashMap采用的hash算法就是链地址法。这种方法有两个极端。
+ 
+ 如果HashMap中哈希冲突概率高，那么HashMap就会退化成链表（不是真的退化，而是操作上像是直接操作链表），而我们知道，链表最大的缺点就是查询速度比较慢，他需要从表头开始逐一遍历。
+ 
+ 所以，为了避免HashMap发生大量的哈希冲突，所以需要在适当的时候对其进行扩容。
+ 
+ 而扩容的条件是元素个数达到临界值时。HashMap中临界值的计算方法：
+ 
+ 临界值（threshold） = 负载因子（loadFactor） * 容量（capacity）
+ 复制ErrorOK!
+ 其中负载因子表示一个数组可以达到的最大的满的程度。这个值不宜太大，也不宜太小。
+ 
+ loadFactory太大，比如等于1，那么就会有很高的哈希冲突的概率，会大大降低查询速度。
+ 
+ loadFactory太小，比如等于0.5，那么频繁扩容，就会大大浪费空间。
+ 
+ 所以，这个值需要介于0.5和1之间。根据数学公式推算。这个值在log(2)的时候比较合理。
+ 
+ 另外，为了提升扩容效率，HashMap的容量（capacity）有一个固定的要求，那就是一定是2的幂。
+ 
+ 所以，如果loadFactor是3/4的话，那么和capacity的乘积结果就可以是一个整数。
+ 
+ 所以，一般情况下，我们不建议修改loadFactory的值，除非特殊原因。
+ 
+ 比如我明确的知道我的Map只存5个kv，并且永远不会改变，那么可以考虑指定loadFactory。
+ 
+ 但是其实我也不建议这样用。我们完全可以通过指定capacity达到这样的目的
+ 
+ 
+ Arrays.asList获得的List使用时需要注意什么
+ asList 得到的只是一个 Arrays 的内部类，一个原来数组的视图 List，因此如果对它进行增删操作会报错
+ 
+ 用 ArrayList 的构造器可以将其转变成真正的 ArrayList
+ 
+ 
+ 
+ Copy-On-Write
+ 在了解了CopyOnWriteArrayList之后，不知道大家会不会有这样的疑问：他的add/remove等方法都已经加锁了，还要copy一份再修改干嘛？多此一举？同样是线程安全的集合，这玩意和Vector有啥区别呢？
+ 
+ Copy-On-Write简称COW，是一种用于程序设计中的优化策略。其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。
+ 
+ CopyOnWrite容器即写时复制的容器。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。
+ 
+ CopyOnWriteArrayList中add/remove等写方法是需要加锁的，目的是为了避免Copy出N个副本出来，导致并发写。
+ 
+ 但是，CopyOnWriteArrayList中的读方法是没有加锁的。
+ 
+ public E get(int index) {
+     return get(getArray(), index);
+ }
+ 复制ErrorOK!
+ 这样做的好处是我们可以对CopyOnWrite容器进行并发的读，当然，这里读到的数据可能不是最新的。因为写时复制的思想是通过延时更新的策略来实现数据的最终一致性的，并非强一致性。
+ 
+ 所以CopyOnWrite容器是一种读写分离的思想，读和写不同的容器。而Vector在读写的时候使用同一个容器，读写互斥，同时只能做一件事儿。
+ 
+ 
+ 
+ 
+ ConcurrentSkipListMap
+ ConcurrentSkipListMap是一个内部使用跳表，并且支持排序和并发的一个Map，是线程安全的。一般很少会被用到，也是一个比较偏门的数据结构。
+ 
+ 简单介绍下跳表
+ 
+ 跳表是一种允许在一个有顺序的序列中进行快速查询的数据结构。
+ 
+ 在普通的顺序链表中查询一个元素，需要从链表头部开始一个一个节点进行遍历，然后找到节点。如图1。
+ 
+ 跳表可以解决这种查询时间过长，其元素遍历的图示如图2，跳表是一种使用”空间换时间”的概念用来提高查询效率的链表。
+ 复制ErrorOK!
+ ConcurrentSkipListMap 和 ConcurrentHashMap 的主要区别： a.底层实现方式不同。ConcurrentSkipListMap底层基于跳表。ConcurrentHashMap底层基于Hash桶和红黑树。 b.ConcurrentHashMap不支持排序。ConcurrentSkipListMap支持排序。
+ 
+
+ 通过反编译代码我们可以看到，public final class T extends Enum，说明，该类是继承了Enum类的，同时final关键字告诉我们，这个类也是不能被继承的。
+ 
+ 当我们使用enmu来定义一个枚举类型的时候，编译器会自动帮我们创建一个final类型的类继承Enum类，所以枚举类型不能被继承。
+ 
+ 
+ 都是static类型的，因为static类型的属性会在类被加载之后被初始化，我们在深度分析Java的ClassLoader机制（源码级别）和Java类的加载、链接和初始化两个文章中分别介绍过，当一个Java类第一次被真正使用到的时候静态资源被初始化、Java类的加载和初始化过程都是线程安全的。所以，创建一个enum类型是线程安全的。
+ 
+ 枚举的序列化和反序列化是有特殊定制的。这就可以避免反序列化过程中由于反射而导致的单例被破坏问题。
+ 
+ 
+ 
+ 
+ 字符流、字节流
+ 字节与字符
+ Bit最小的二进制单位 ，是计算机的操作部分。取值0或者1
+ 
+ Byte（字节）是计算机操作数据的最小单位由8位bit组成 取值（-128-127）
+ 
+ Char（字符）是用户的可读写的最小单位，在Java里面由16位bit组成 取值（0-65535）
+ 
+ 字节流
+ 操作byte类型数据，主要操作类是OutputStream、InputStream的子类；不用缓冲区，直接对文件本身操作。
+ 
+ 字符流
+ 操作字符类型数据，主要操作类是Reader、Writer的子类；使用缓冲区缓冲字符，不关闭流就不会输出任何内容。
+ 
+ 互相转换
+ 整个IO包实际上分为字节流和字符流，但是除了这两个流之外，还存在一组字节流-字符流的转换类。
+ 
+ OutputStreamWriter：是Writer的子类，将输出的字符流变为字节流，即将一个字符流的输出对象变为字节流输出对象。
+ 
+ InputStreamReader：是Reader的子类，将输入的字节流变为字符流，即将一个字节流的输入对象变为字符流的输入对象。
+ 
+ 
+ 同步、异步
+ 同步与异步描述的是被调用者的。
+ 
+ 如A调用B：
+ 
+ 如果是同步，B在接到A的调用后，会立即执行要做的事。A的本次调用可以得到结果。
+ 
+ 如果是异步，B在接到A的调用后，不保证会立即执行要做的事，但是保证会去做，B在做好了之后会通知A。A的本次调用得不到结果，但是B执行完之后会通知A。
+ 
+ 同步，异步 和 阻塞，非阻塞之间的区别
+ 同步，异步，是描述被调用方的。
+ 
+ 阻塞、非阻塞，是描述调用方的。
+ 
+ 同步不一定阻塞，异步也不一定非阻塞。没有必然关系。
+ 
+ 举个简单的例子，老张烧水。 1 老张把水壶放到火上，一直在水壶旁等着水开。（同步阻塞） 2 老张把水壶放到火上，去客厅看电视，时不时去厨房看看水开没有。（同步非阻塞） 3 老张把响水壶放到火上，一直在水壶旁等着水开。（异步阻塞） 4 老张把响水壶放到火上，去客厅看电视，水壶响之前不再去看它了，响了再去拿壶。（异步非阻塞）
+ 
+ 1和2的区别是，调用方在得到返回之前所做的事情不一样。 1和3的区别是，被调用方对于烧水的处理不一样。
