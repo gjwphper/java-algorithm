@@ -593,3 +593,400 @@ TreeMap是按key排序的，元素在插入TreeSet时compareTo()方法要被调�
  NIO方式适用于连接数目多且连接比较短（轻操作）的架构，比如聊天服务器，并发局限于应用中，编程比较复杂，JDK1.4开始支持。
  
  AIO方式适用于连接数目多且连接比较长（重操作）的架构，比如相册服务器，充分调用OS参与并发操作，编程比较复杂，JDK7开始支持。
+ 
+ 
+ 
+ Serializable 和 Externalizable 有何不同
+ Java中的类通过实现 java.io.Serializable 接口以启⽤其序列化功能。 未实现此接口的类将⽆法使其任何状态序列化或反序列化。
+ 
+ 可序列化类的所有⼦类型本⾝都是可序列化的。
+ 
+ 序列化接口没有⽅法或字段， 仅⽤于标识可序列化的语义。
+ 
+ 当试图对⼀个对象进⾏序列化的时候， 如果遇到不⽀持Serializable 接口的对象。 在此情况下， 将抛NotSerializableException。
+ 
+ 如果要序列化的类有⽗类， 要想同时将在⽗类中定义过的变量持久化下来， 那么⽗类也应该集成java.io.Serializable接口。
+ 
+ Externalizable继承了Serializable， 该接口中定义了两个抽象⽅法：writeExternal()与readExternal()。 当使⽤Externalizable接口来进⾏序列化与反序列化的时候需要开发⼈员重写writeExternal()与readExternal()⽅法。
+ 
+ 如果没有在这两个⽅法中定义序列化实现细节， 那么序列化之后， 对象内容为空。
+ 
+ 实现Externalizable接口的类必须要提供⼀个public的⽆参的构造器。
+ 
+ 所以， 实现Externalizable， 并实现writeExternal()和readExternal()⽅法可以指定序列化哪些属性。
+ 
+ 
+ 总结
+ serialVersionUID是用来验证版本一致性的。所以在做兼容性升级的时候，不要改变类中serialVersionUID的值。
+ 
+ 如果一个类实现了Serializable接口，一定要记得定义serialVersionUID，否则会发生异常。可以在IDE中通过设置，让他帮忙提示，并且可以一键快速生成一个serialVersionUID。
+ 
+ 之所以会发生异常，是因为反序列化过程中做了校验，并且如果没有明确定义的话，会根据类的属性自动生成一个。
+ 
+ 
+ 
+ 
+ 如果一个类中包含writeObject 和 readObject 方法，那么这两个方法是怎么被调用的?
+ 
+ 答：在使用ObjectOutputStream的writeObject方法和ObjectInputStream的readObject方法时，会通过反射的方式调用。
+ 
+ 总结
+ 1、如果一个类想被序列化，需要实现Serializable接口。否则将抛出NotSerializableException异常，这是因为，在序列化操作过程中会对类型进行检查，要求被序列化的类必须属于Enum、Array和Serializable类型其中的任何一种。
+ 
+ 2、在变量声明前加上该关键字，可以阻止该变量被序列化到文件中。
+ 
+ 3、在类中增加writeObject 和 readObject 方法可以实现自定义序列化策略
+ 
+ 
+ 
+ 
+ 所以。到目前为止，也就可以解释，为什么序列化可以破坏单例了？
+ 
+ 答：序列化会通过反射调用无参数的构造方法创建一个新的对象。
+ 
+ 那么，接下来我们再看刚开始留下的问题，如何防止序列化/反序列化破坏单例模式。
+ 
+ 
+ 先给出解决方案，然后再具体分析原理：
+ 
+ 只要在Singleton类中定义readResolve就可以解决该问题：
+ 
+ 
+ 元注解有六个:@Target（表示该注解可以用于什么地方）、@Retention（表示再什么级别保存该注解信息）、@Documented（将此注解包含再javadoc中）、@Inherited（允许子类继承父类中的注解）、@Repeatable（1.8新增，允许一个注解在一个元素上使用多次）、@Native（1.8新增，修饰成员变量，表示这个变量可以被本地代码引用，常常被代码生成工具使用）。
+ 
+ 
+ 
+ 
+ Spring常用注解
+ @Configuration把一个类作为一个IoC容器，它的某个方法头上如果注册了@Bean，就会作为这个Spring容器中的Bean。
+ 
+ @Scope注解 作用域
+ 
+ @Lazy(true) 表示延迟初始化
+ 
+ @Service用于标注业务层组件
+ 
+ @Controller用于标注控制层组件@Repository用于标注数据访问组件，即DAO组件。
+ 
+ @Component泛指组件，当组件不好归类的时候，我们可以使用这个注解进行标注。
+ 
+ @Scope用于指定scope作用域的（用在类上）
+ 
+ @PostConstruct用于指定初始化方法（用在方法上）
+ 
+ @PreDestory用于指定销毁方法（用在方法上）
+ 
+ @DependsOn：定义Bean初始化及销毁时的顺序
+ 
+ @Primary：自动装配时当出现多个Bean候选者时，被注解为@Primary的Bean将作为首选者，否则将抛出异常
+ 
+ @Autowired 默认按类型装配，如果我们想使用按名称装配，可以结合@Qualifier注解一起使用。如下： @Autowired @Qualifier("personDaoBean") 存在多个实例配合使用
+ 
+ @Resource默认按名称装配，当找不到与名称匹配的bean才会按类型装配。
+ 
+ @PostConstruct 初始化注解
+ 
+ @PreDestroy 摧毁注解 默认 单例 启动就加载
+ 
+ 
+ 
+ 
+ 如何自定义一个注解？
+ 在Java中，类使用class定义，接口使用interface定义，注解和接口的定义差不多，增加了一个@符号，即@interface，代码如下：
+ 
+ public @interface EnableAuth {
+ 
+ }
+ 复制ErrorOK!
+ 注解中可以定义成员变量，用于信息的描述，跟接口中方法的定义类似，代码如下：
+ 
+ public @interface EnableAuth {
+     String name();
+ }
+ 复制ErrorOK!
+ 还可以添加默认值：
+ 
+ public @interface EnableAuth {
+     String name() default "猿天地";
+ }
+ 复制ErrorOK!
+ 上面的介绍只是完成了自定义注解的第一步，开发中日常使用注解大部分是用在类上，方法上，字段上，示列代码如下：
+ 
+ @Target(ElementType.METHOD)
+ @Retention(RetentionPolicy.RUNTIME)
+ @Documented
+ public @interface EnableAuth {
+ 
+ }
+ 复制ErrorOK!
+ Target
+ 
+ 用于指定被修饰的注解修饰哪些程序单元，也就是上面说的类，方法，字段
+ 
+ Retention
+ 
+ 用于指定被修饰的注解被保留多长时间，分别SOURCE（注解仅存在于源码中，在class字节码文件中不包含）,CLASS（默认的保留策略，注解会在class字节码文件中存在，但运行时无法获取）,RUNTIME（注解会在class字节码文件中存在，在运行时可以通过反射获取到）三种类型，如果想要在程序运行过程中通过反射来获取注解的信息需要将Retention设置为RUNTIME
+ 
+ Documented
+ 
+ 用于指定被修饰的注解类将被javadoc工具提取成文档
+ 
+ Inherited
+ 
+ 用于指定被修饰的注解类将具有继承性
+ 
+ 
+ 
+ 
+ 五、总结
+ 1.虚拟机中没有泛型，只有普通类和普通方法,所有泛型类的类型参数在编译时都会被擦除,泛型类并没有自己独有的Class类对象。比如并不存在List<String>.class或是List<Integer>.class，而只有List.class。 2.创建泛型对象时请指明类型，让编译器尽早的做参数检查（Effective Java，第23条：请不要在新代码中使用原生态类型） 3.不要忽略编译器的警告信息，那意味着潜在的ClassCastException等着你。 4.静态变量是被泛型类的所有实例所共享的。对于声明为MyClass<T>的类，访问其中的静态变量的方法仍然是 MyClass.myStaticVar。不管是通过new MyClass<String>还是new MyClass<Integer>创建的对象，都是共享一个静态变量。 5.泛型的类型参数不能用在Java异常处理的catch语句中。因为异常处理是由JVM在运行时刻来进行的。由于类型信息被擦除，JVM是无法区分两个异常类型MyException<String>和MyException<Integer>的。对于JVM来说，它们都是 MyException类型的。也就无法执行与异常对应的catch语句。
+ 
+ 
+ 
+ 
+ 泛型中K T V E ？ object等的含义
+ E - Element (在集合中使用，因为集合中存放的是元素)
+ 
+ T - Type（Java 类）
+ 
+ K - Key（键）
+ 
+ V - Value（值）
+ 
+ N - Number（数值类型）
+ 
+ ？ - 表示不确定的java类型（无限制通配符类型）
+ 
+ S、U、V - 2nd、3rd、4th types
+ 
+ Object - 是所有类的根类，任何类的对象都可以设置给该Object引用变量，使用的时候可能需要类型强制转换，但是用使用了泛型T、E等这些标识符后，在实际用之前类型就已经确定了，不需要再进行类型强制转换。
+ 
+ 
+ 
+ 限定通配符和非限定通配符
+ 限定通配符对类型进⾏限制， 泛型中有两种限定通配符：
+ 
+ 表示类型的上界，格式为：<？ extends T>，即类型必须为T类型或者T子类 表示类型的下界，格式为：<？ super T>，即类型必须为T类型或者T的父类
+ 
+ 泛型类型必须⽤限定内的类型来进⾏初始化，否则会导致编译错误。
+ 
+ ⾮限定通配符表⽰可以⽤任意泛型类型来替代，类型为<T>
+ 
+ 
+ 
+ List<?> 是一个未知类型的List，而List<Object> 其实是任意类型的List。你可以把List<String>, List<Integer>赋值给List<?>，却不能把List<String>赋值给 List<Object>。
+ 
+ 
+ 
+ 接口和抽象类有什么区别
+ 他们都不能实例化对象，都可以包含抽象方法，而且抽象方法必须被继承的类全部实现。
+ 
+ 区别：
+ 
+ 1、抽象类和接口都不能直接实例化，如果要实例化，抽象类变量必须指向实现所有抽象方法的子类对象，接口变量必须指向实现所有接口方法的类对象。
+ 
+ 2、抽象类要被子类继承，接口要被类实现。
+ 
+ 3、接口只能做方法申明，抽象类中可以做方法申明，也可以做方法实现
+ 
+ 4、接口里定义的变量只能是公共的静态的常量，抽象类中的变量是普通变量。
+ 
+ 5、抽象类里的抽象方法必须全部被子类所实现，如果子类不能全部实现父类抽象方法，那么该子类只能是抽象类。同样，一个实现接口的时候，如不能全部实现接口方法，那么该类也只能为抽象类。
+ 
+ 6、抽象方法只能申明，不能实现，接口是设计的结果 ，抽象类是重构的结果
+ 
+ 7、抽象类里可以没有抽象方法
+ 
+ 8、如果一个类里有抽象方法，那么这个类只能是抽象类
+ 
+ 9、抽象方法要被实现，所以不能是静态的，也不能是私有的。
+ 
+ 10、接口可继承接口，并可多继承接口，但类只能单根继承。
+ 
+ 
+ 
+ 受检异常
+ 对于受检异常来说， 如果⼀个⽅法在声明的过程中证明了其要有受检异常抛出：
+ 
+ public void test() throw new Exception{ }
+ 复制ErrorOK!
+ 那么，当我们在程序中调⽤他的时候， ⼀定要对该异常进⾏处理（ 捕获或者向上抛出） ， 否则是⽆法编译通过的。 这是⼀种强制规范。
+ 
+ 这种异常在IO操作中⽐较多。 ⽐如FileNotFoundException ， 当我们使⽤IO流处理⼀个⽂件的时候， 有⼀种特殊情况， 就是⽂件不存在， 所以， 在⽂件处理的接⼜定义时他会显⽰抛出FileNotFoundException， ⽬的就是告诉这个⽅法的调⽤者，我这个⽅法不保证⼀定可以成功， 是有可能找不到对应的⽂件 的， 你要明确的对这种情况做特殊处理哦。
+ 
+ 所以说， 当我们希望我们的⽅法调⽤者， 明确的处理⼀些特殊情况的时候， 就应该使⽤受检异常。
+ 
+ 非受检异常
+ 对于⾮受检异常来说， ⼀般是运⾏时异常， 继承⾃RuntimeException。 在编写代码的时候， 不需要显⽰的捕获，但是如果不捕获， 在运⾏期如果发⽣异常就会中断程序的执⾏。
+ 
+ 这种异常⼀般可以理解为是代码原因导致的。 ⽐如发⽣空指针、 数组越界等。 所以， 只要代码写的没问题， 这些异常都是可以避免的。 也就不需要我们显⽰的进⾏处理。
+ 
+ 试想⼀下， 如果你要对所有可能发⽣空指针的地⽅做异常处理的话， 那相当于你的所有代码都需要做这件事。
+ 
+ 正确处理异常
+ 异常的处理⽅式有两种。 1、 ⾃⼰处理。 2、 向上抛， 交给调⽤者处理。
+ 
+ 异常， 千万不能捕获了之后什么也不做。 或者只是使⽤e.printStacktrace。
+ 
+ 具体的处理⽅式的选择其实原则⽐较简明： ⾃⼰明确的知道如何处理的， 就要处理掉。 不知道如何处理的， 就交给调⽤者处理。
+ 
+ 
+ ⾃定义异常就是开发⼈员⾃⼰定义的异常， ⼀般通过继承Exception的⼦类的⽅式实现。
+ 
+ 编写⾃定义异常类实际上是继承⼀个API标准异常类， ⽤新定义的异常处理信息覆盖原有信息的过程。
+ 
+ 这种⽤法在Web开发中也⽐较常见， ⼀般可以⽤来⾃定义业务异常。 如余额不⾜、 重复提交等。 这种⾃定义异常有业务含义， 更容易让上层理解和处理
+ 
+ 
+ 从Java 7开始，jdk提供了一种更好的方式关闭资源，使用try-with-resources语句，改写一下上面的代码，效果如下：
+ 
+ public static void main(String... args) {
+     try (BufferedReader br = new BufferedReader(new FileReader("d:\\ hollischuang.xml"))) {
+         String line;
+         while ((line = br.readLine()) != null) {
+             System.out.println(line);
+         }
+     } catch (IOException e) {
+         // handle exception
+     }
+ }
+ 
+ 
+ 
+ 
+ 但是return前执行的finally块内，对数据的修改效果对于引用类型和值类型会不同
+ 
+ // 测试 修改值类型
+ static int f() {
+     int ret = 0;
+     try {
+         return ret;  // 返回 0，finally内的修改效果不起作用
+     } finally {
+         ret++;
+         System.out.println("finally执行");
+     }
+ }
+ 
+ // 测试 修改引用类型
+ static int[] f2(){
+     int[] ret = new int[]{0};
+     try {
+         return ret;  // 返回 [1]，finally内的修改效果起了作用
+     } finally {
+         ret[0]++;
+         System.out.println("finally执行");
+     }
+ }
+ 
+ 
+ 
+ CET
+ 欧洲中部时间（英語：Central European Time，CET）是比世界标准时间（UTC）早一个小时的时区名称之一。它被大部分欧洲国家和部分北非国家采用。冬季时间为UTC+1，夏季欧洲夏令时为UTC+2。
+ 
+ UTC
+ 协调世界时，又称世界标准时间或世界协调时间，简称UTC，从英文“Coordinated Universal Time”／法文“Temps Universel Cordonné”而来。台湾采用CNS 7648的《资料元及交换格式–资讯交换–日期及时间的表示法》（与ISO 8601类似）称之为世界统一时间。中国大陆采用ISO 8601-1988的国标《数据元和交换格式信息交换日期和时间表示法》（GB/T 7408）中称之为国际协调时间。协调世界时是以原子时秒长为基础，在时刻上尽量接近于世界时的一种时间计量系统。
+ 
+ GMT
+ 格林尼治标准时间（旧译格林尼治平均时间或格林威治标准时间；英语：Greenwich Mean Time，GMT）是指位于英国伦敦郊区的皇家格林尼治天文台的标准时间，因为本初子午线被定义在通过那里的经线。
+ 
+ CST
+ 北京时间，China Standard Time，又名中国标准时间，是中国的标准时间。在时区划分上，属东八区，比协调世界时早8小时，记为UTC+8，与中华民国国家标准时间（旧称“中原标准时间”）、香港时间和澳门时间和相同。當格林威治時間為凌晨0:00時，中國標準時間剛好為上午8:00。
+ 
+
+
+
+在Java中，可以使用SimpleDateFormat的format方法，将一个Date类型转化成String类型，并且可以指定输出格式。
+
+// Date转String
+Date data = new Date();
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+String dataStr = sdf.format(data);
+System.out.println(dataStr);
+复制ErrorOK!
+以上代码，转换的结果是：2018-11-25 13:00:00，日期和时间格式由"日期和时间模式"字符串指定。如果你想要转换成其他格式，只要指定不同的时间模式就行了。
+
+在Java中，可以使用SimpleDateFormat的parse方法，将一个String类型转化成Date类型。
+
+// String转Data
+System.out.println(sdf.parse(dataStr));
+
+
+
+
+
+总结
+本文介绍了SimpleDateFormat的用法，SimpleDateFormat主要可以在String和Date之间做转换，还可以将时间转换成不同时区输出。同时提到在并发场景中SimpleDateFormat是不能保证线程安全的，需要开发者自己来保证其安全性。
+
+主要的几个手段有改为局部变量、使用synchronized加锁、使用Threadlocal为每一个线程单独创建一个等。
+
+希望通过此文，你可以在使用SimpleDateFormat的时候更加得心应手。
+
+
+LocalTime 和 LocalDate的区别？
+LocalDate表⽰⽇期， 年⽉⽇， LocalTime表⽰时间， 时分 秒
+
+获取当前时间
+在Java8中，使用如下方式获取当前时间：
+
+LocalDate today = LocalDate.now();
+int year = today.getYear();
+int month = today.getMonthValue();
+int day = today.getDayOfMonth();
+System.out.printf("Year : %d Month : %d day : %d t %n", year,month, day);
+复制ErrorOK!
+创建指定日期的时间
+LocalDate date = LocalDate.of(2018, 01, 01);
+复制ErrorOK!
+检查闰年
+直接使⽤LocalDate的isLeapYear即可判断是否闰年
+
+LocalDate nowDate = LocalDate.now();
+//判断闰年
+boolean leapYear = nowDate.isLeapYear();
+复制ErrorOK!
+计算两个⽇期之间的天数和⽉数
+在Java 8中可以⽤java.time.Period类来做计算。
+
+Period period = Period.between(LocalDate.of(2018, 1, 5),LocalDate.of(2018, 2, 5));
+
+所以，当我们要表示日期的时候，一定要使用 yyyy-MM-dd 而不是 YYYY-MM-dd ，这两者的返回结果大多数情况下都一样，但是极端情况就会有问题了。
+
+
+URL编解码
+网络标准RFC 1738做了硬性规定 :只有字母和数字[0-9a-zA-Z]、一些特殊符号“$-_.+!*'(),”[不包括双引号]、以及某些保留字，才可以不经过编码直接用于URL;
+
+除此以外的字符是无法在URL中展示的，所以，遇到这种字符，如中文，就需要进行编码。
+
+所以，把带有特殊字符的URL转成可以显示的URL过程，称之为URL编码。
+
+反之，就是解码。
+
+URL编码可以使用不同的方式，如escape，URLEncode，encodeURIComponent。
+
+
+当我们使用enum来定义一个枚举类型的时候，编译器会自动帮我们创建一个final类型的类继承Enum类，所以枚举类型不能被继承。
+
+
+
+BigDecimal是一个非常好用的表示高精度数字的类，其中提供了很多丰富的方法。
+
+但是，他的equals方法使用的时候需要谨慎，因为他在比较的时候，不仅比较两个数字的值，还会比较他们的标度，只要这两个因素有一个是不相等的，那么结果也是false、
+
+如果读者想要对两个BigDecimal的数值进行比较的话，可以使用compareTo方法。
+
+
+
+总结
+因为计算机采用二进制处理数据，但是很多小数，如0.1的二进制是一个无线循环小数，而这种数字在计算机中是无法精确表示的。
+
+所以，人们采用了一种通过近似值的方式在计算机中表示，于是就有了单精度浮点数和双精度浮点数等。
+
+所以，作为单精度浮点数的float和双精度浮点数的double，在表示小数的时候只是近似值，并不是真实值。
+
+所以，当使用BigDecimal(Double)创建一个的时候，得到的BigDecimal是损失了精度的。
+
+而使用一个损失了精度的数字进行计算，得到的结果也是不精确的。
+
+想要避免这个问题，可以通过BigDecimal(String)的方式创建BigDecimal，这样的情况下，0.1就会被精确的表示出来。
+
+其表现形式是一个无标度数值1，和一个标度1的组合。
