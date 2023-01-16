@@ -15,6 +15,10 @@ public class Test {
         String a = "good,\n";
         System.out.println(",\n".length());
 
+        StringBuffer dynamicColumnsComment = new StringBuffer();
+        dynamicColumnsComment = dynamicColumnsComment.append("aaaa");
+        System.out.println(dynamicColumnsComment.toString());
+
 
 
 
